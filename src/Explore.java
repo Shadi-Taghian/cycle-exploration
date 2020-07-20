@@ -18,10 +18,20 @@ public class Explore {
         for(int t=0; t<2*n; t++){
             for(int s=0; s<n; s++){
                 temporalBFS(s,t,n);
+                System.out.println("okkkkkk");
             }
         }
-        explore(n);
 
+//        explore(n);
+//        for(int i=0; i<n; i++){
+//            for(int j=0; j<n; j++){
+//                for(int k=0; k<n; k++){
+//                    for(int t=0; t<2*n; t++){
+//                        System.out.println(d[i][j][k][t]);
+//                    }
+//                }
+//            }
+//        }
     }
 
     public static void createTemporalCycle(int[][] staticCycle){
@@ -68,6 +78,7 @@ public class Explore {
         while(!q.isEmpty()){
             node =  q.get(0);
             q.remove(0);
+            System.out.println(node);
             for(int i=0; i<n; i++){
                 if((cycles.get(t)[node][i] == 1) && !mark[i]){
                     q.add(i);
@@ -91,8 +102,8 @@ public class Explore {
         return t;
     }
 
-    public static int[][][][] explore(int n){
-        for(int t=0; t< cycles.size(); t++){
+    public static void explore(int n){
+        for(int t=0; t< 2*n; t++){
             for(int i=0; i<n; i++){
                 for(int j=0; j<n; j++){
                     for(int k=0; k<n; k++){
@@ -106,6 +117,5 @@ public class Explore {
                 }
             }
         }
-        return null;
     }
 }
