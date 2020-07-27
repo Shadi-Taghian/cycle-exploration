@@ -13,10 +13,13 @@ public class Explore {
     public static  int oo = 1000*1000;
 
     public static void main(String[] args) {
+        System.out.println("Please enter the number of nodes: ");
         Scanner sc = new Scanner(System.in);
         int n = sc.nextInt();
         int[][] staticCycle = fillStaticCycle(n);
         distance = new int[n][n][4*n];
+
+        //Fill the distance array with infinity before calculation
         for(int i=0; i<n;i++){
             for(int j=0; j<n;j++){
                 for (int k=0; k< 3*n; k++){
@@ -29,11 +32,15 @@ public class Explore {
         createTemporalCycle(staticCycle);
         cycleWriter(n);
 
+        //Calculate the distance between every two nodes for all times
         for(int time=0;time<4*n;time++){
             for(int node =0; node<n; node++){
                 temporalBFS(node, time, n);
             }
         }
+
+        //Subtract the starting time in order to get the time it takes
+        // to travel from the starting node to the destination node
         for(int l=0; l<4*n; l++){
             for(int m=0; m<n; m++){
                 for(int o=0; o<n; o++){
@@ -46,6 +53,9 @@ public class Explore {
         dpWriter(n);
     }
 
+    /**
+     *  Creates snapshots of temporal cycle using the static cycle
+     *  */
     public static void createTemporalCycle(int[][] staticCycle){
         int n = staticCycle.length;
         Random rand = new Random();
@@ -58,6 +68,7 @@ public class Explore {
         }
 
     }
+
     public static int[][] copyArray(int[][] oldArr, int n){
         int[][] newArr = new int[n][n];
         for(int i=0; i<n; i++)
@@ -66,6 +77,10 @@ public class Explore {
             }
         return newArr;
     }
+
+    /**
+     *  Creates the adjacency matrix of a static cycle
+     *  */
     public static int[][] fillStaticCycle(int n){
         int[][] staticCycle = new int[n][n];
         for(int t=0; t<n; t++){
@@ -79,6 +94,11 @@ public class Explore {
         }
         return staticCycle;
     }
+
+    /**
+     *  Runs temporal BFS on the snapshots of the temporal graph
+     *  in order to calculate the shortest path between two nodes i and j starting at time t
+     *  */
     public static void temporalBFS(int u, int t, int n){
         ArrayList<NodeTime> q = new ArrayList<>();
         q.add(new NodeTime(u,t - 1));
@@ -102,6 +122,9 @@ public class Explore {
         }
     }
 
+    /**
+     *  Finds the first time an edge appears between node u and i after time t
+     *  */
     public static int findTheFirstTime(int u, int i, int n, int t){
         int time = oo;
         for(int p=t+1; p<4*n; p++){
@@ -113,6 +136,10 @@ public class Explore {
         return time;
     }
 
+
+    /**
+     *  Fills the dynamic programming array to calculate the minimum time for exploration.
+     *  */
     public static void explore(int n){
         for(int x=0; x<2*n; x++){
             for(int y=0; y<n-1; y++){
