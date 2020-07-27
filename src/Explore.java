@@ -25,14 +25,15 @@ public class Explore {
             }
         }
         d = new int[n][n][2][4*n];
+
         createTemporalCycle(staticCycle);
+        cycleWriter(n);
 
         for(int time=0;time<4*n;time++){
             for(int node =0; node<n; node++){
                 temporalBFS(node, time, n);
             }
         }
-
         for(int l=0; l<4*n; l++){
             for(int m=0; m<n; m++){
                 for(int o=0; o<n; o++){
@@ -40,7 +41,9 @@ public class Explore {
                 }
             }
         }
+        tBFSWriter(n);
         explore(n);
+        dpWriter(n);
     }
 
     public static void createTemporalCycle(int[][] staticCycle){
@@ -162,15 +165,72 @@ public class Explore {
             } else {
                 System.out.println("File already exists.");
             }
-            FileWriter myWriter = new FileWriter("filename.txt");
+            FileWriter myWriter = new FileWriter("temporal-cycle.txt");
             for(int s=0; s<cycles.size();s++){
-                myWriter.write("Snapshot: " + s );
+                myWriter.write("Snapshot: " + s + "\n");
                 for(int i=0; i<n; i++){
                     for(int j=0; j<n; j++){
                         myWriter.write(cycles.get(s)[i][j] + " ");
                     }
                     myWriter.write("\n");
                 }
+                myWriter.write("........................" + "\n");
+            }
+            myWriter.close();
+        }
+        catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+    public static void tBFSWriter(int n){
+        try {
+            File myObj = new File("distance.txt");
+            if (myObj.createNewFile()) {
+                System.out.println("File created: " + myObj.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+            FileWriter myWriter = new FileWriter("distance.txt");
+            for(int s=0; s<3*n;s++){
+                myWriter.write("time: " + s + "\n");
+                for(int i=0; i<n; i++){
+                    for(int j=0; j<n; j++){
+                        myWriter.write(distance[i][j][s] + " ");
+                    }
+                    myWriter.write("\n");
+                }
+                myWriter.write("........................" + "\n");
+            }
+            myWriter.close();
+        }
+        catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+
+    public static void dpWriter(int n){
+        try {
+            File myObj = new File("dp.txt");
+            if (myObj.createNewFile()) {
+                System.out.println("File created: " + myObj.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+            FileWriter myWriter = new FileWriter("dp.txt");
+            for(int s=0; s<2*n;s++){
+                myWriter.write("time: " + s + "\n");
+                for(int i=0; i<n; i++){
+                    for(int j=0; j<n; j++){
+                        for(int k=0; k<2; k++){
+                            myWriter.write(d[i][j][k][s] + " ");
+                        }
+                        myWriter.write("\n");
+                    }
+                    myWriter.write("\n");
+                }
+                myWriter.write("........................" + "\n");
             }
             myWriter.close();
         }
