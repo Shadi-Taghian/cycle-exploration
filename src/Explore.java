@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -30,6 +29,8 @@ public class Explore {
         d = new int[n][n][2][4*n];
 
         createTemporalCycle(staticCycle);
+        //createTemporalCycleAllCycle(staticCycle);
+        //createTemporalCycleAllTheSame(staticCycle);
         cycleWriter(n);
 
         //Calculate the distance between every two nodes for all times
@@ -61,6 +62,28 @@ public class Explore {
         Random rand = new Random();
         for(int i = 0; i< 4*n; i++){
             int rnd = rand.nextInt(n);
+            int[][] cycle = copyArray(staticCycle,n);
+            cycle[rnd][(rnd+1)%n] = 0;
+            cycle[(rnd+1)%n][rnd] = 0;
+            cycles.add(cycle);
+        }
+
+    }
+
+    public static void createTemporalCycleAllCycle(int[][] staticCycle){
+        int n = staticCycle.length;
+        for(int i = 0; i< 4*n; i++){
+            int[][] cycle = copyArray(staticCycle,n);
+            cycles.add(cycle);
+        }
+
+    }
+
+    public static void createTemporalCycleAllTheSame(int[][] staticCycle){
+        int n = staticCycle.length;
+        Random rand = new Random();
+        int rnd = rand.nextInt(n);
+        for(int i = 0; i< 4*n; i++){
             int[][] cycle = copyArray(staticCycle,n);
             cycle[rnd][(rnd+1)%n] = 0;
             cycle[(rnd+1)%n][rnd] = 0;
@@ -111,9 +134,9 @@ public class Explore {
             time = q.get(0).getTime();
             q.remove(0);
             for(int i=0; i<n; i++){
-                int firstTime = findTheFirstTime(node, i, n, time)+1;
+                int firstTime = findTheFirstTime(node, i, n, time);
                 if(distance[u][i][t] > firstTime){
-                    distance[u][i][t] = firstTime;
+                    distance[u][i][t] = firstTime+1;
 
                     q.add(new NodeTime(i, firstTime));
                 }
@@ -141,48 +164,67 @@ public class Explore {
      *  Fills the dynamic programming array to calculate the minimum time for exploration.
      *  */
     public static void explore(int n){
-        for(int x=0; x<2*n; x++){
-            for(int y=0; y<n-1; y++){
-                d[y][y+1][1][x] = distance[y][y+1][x];
+        for(int t=0; t< 4*n; t++){
+            for(int i=0; i<n; i++){
+                for(int j=0; j<n; j++){
+                    for(int k=0; k<2; k++){
+                        d[i][j][k][t] = oo;
+                    }
+                }
             }
-            d[n-1][0][1][x] = distance[n-1][0][x];
         }
 
-        for(int t=0; t< 2*n; t++){
-            for(int i=0; i<n; i++){
-                for(int j=0; j<n-1; j++){
+        for(int x=0; x<4*n; x++){
+            for(int y=1; y<n; y++){
+                d[y][y-1][1][x] = distance[y][y-1][x];
+                d[y][y-1][0][x] = distance[y][y-1][x];
+            }
+            d[0][n-1][1][x] = distance[0][n-1][x];
+            d[0][n-1][0][x] = distance[0][n-1][x];
+        }
+
+        for(int t=(2*n); t>=0; t--){
+            for(int p=2; p<n; p++){
+                for(int i=0; i<n; i++){
+                    int j = decrement(i,n,p);
                     for(int k=0; k<2; k++){
                         int left, right;
                         if(k==0){
-                            right = distance[i][increment(j,n)][t] +
-                                    d[i][increment(j,n)][1][(t+distance[j][increment(j,n)][t])];
-                            left = distance[i][decrement(i,n)][t] +
-                                    d[decrement(i,n)][j][0][(t+distance[i][decrement(i,n)][t])];
+                            right = distance[i][increment(j,n,1)][t] +
+                                    d[i][increment(j,n,1)][1][(t+distance[j][increment(j,n,1)][t])];
+                            left = distance[i][decrement(i,n,1)][t] +
+                                    d[decrement(i,n,1)][j][0][(t+distance[i][decrement(i,n,1)][t])];
+//                            System.out.println("distance: " + distance[i][increment(j,n,1)][t]);
+//                            System.out.println( "dp: " + d[i][increment(j,n,1)][1][(t+distance[j][increment(j,n,1)][t])]);
+//                            System.out.println("i,j: "+ i + ", " + j +" right: " + right + " and left: " + left);
                         }
                         else{
-                            right = distance[j][increment(j,n)][t] +
-                                    d[i][increment(j,n)][1][(t+distance[j][increment(j,n)][t])];
-                            left = distance[j][decrement(i,n)][t] +
-                                    d[decrement(i,n)][j][0][(t+distance[j][increment(j,n)][t])];
+                            right = distance[j][increment(j,n,1)][t] +
+                                    d[i][increment(j,n,1)][1][(t+distance[j][increment(j,n,1)][t])];
+                            left = distance[j][decrement(i,n,1)][t] +
+                                    d[decrement(i,n,1)][j][0][(t+distance[j][increment(j,n,1)][t])];
+                            //System.out.println("i,j: "+ i + ", " + j +" right: " + right + " and left: " + left);
                         }
                         d[i][j][k][t] = (left < right) ? left : right;
+                        //System.out.println(d[i][j][k][t]);
                     }
                 }
             }
         }
     }
 
-    public static int increment(int number, int n){
-        if(number == (n-1))
-            return 0;
+    public static int increment(int number, int n, int howMuch){
+        if((number + howMuch) >= n)
+            return (number + howMuch)%(n-1);
         else
-            return (number+1);
+            return (number+howMuch);
     }
-    public static int decrement(int number, int n){
-        if(number == 0)
-            return (n-1);
+    public static int decrement(int number, int n, int howMuch){
+        if((number-howMuch) < 0){
+            return (number-howMuch)%(n)+n;
+        }
         else
-            return (number-1);
+            return (number-howMuch);
     }
     public static void cycleWriter(int n){
         try {
@@ -194,7 +236,7 @@ public class Explore {
             }
             FileWriter myWriter = new FileWriter("temporal-cycle.txt");
             for(int s=0; s<cycles.size();s++){
-                myWriter.write("Snapshot: " + s + "\n");
+                //myWriter.write("Snapshot: " + s + "\n");
                 for(int i=0; i<n; i++){
                     for(int j=0; j<n; j++){
                         myWriter.write(cycles.get(s)[i][j] + " ");
@@ -246,11 +288,13 @@ public class Explore {
                 System.out.println("File already exists.");
             }
             FileWriter myWriter = new FileWriter("dp.txt");
-            for(int s=0; s<2*n;s++){
+            for(int s=0; s<=(2*n);s++){
                 myWriter.write("time: " + s + "\n");
-                for(int i=0; i<n; i++){
-                    for(int j=0; j<n; j++){
-                        for(int k=0; k<2; k++){
+
+                for(int k=0; k<2; k++){
+                    myWriter.write("k: " + k + "\n");
+                    for(int i=0; i<n; i++){
+                        for(int j=0; j<n; j++){
                             myWriter.write(d[i][j][k][s] + " ");
                         }
                         myWriter.write("\n");

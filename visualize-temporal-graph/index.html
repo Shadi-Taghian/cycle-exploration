@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            #cy {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                z-index: -1;
+            }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.15.2/cytoscape.min.js"></script>
+        <script src="http://marvl.infotech.monash.edu/webcola/cola.min.js"></script>
+        <script src="cytoscape-cola.js"></script>
+        <script src="https://unpkg.com/layout-base/layout-base.js"></script>
+        <script src="https://unpkg.com/cose-base/cose-base.js"></script>
+        <script src="cytoscape-cose-bilkent.js"></script>
+    </head>
+    <body>
+        <div id="cy"></div>
+        <input id="inp" type="file" onchange="readFile()" />
+        <button id="previous" onclick="previous">previous</button>
+        <button id="next" onclick="next()">next</button>
+    </body>
+    <script src="index.js"></script>
+</html>
