@@ -9,6 +9,8 @@ public class Explore {
     public static ArrayList<int[][]> cycles = new ArrayList<>();
     public static  int[][][] distance;
     public static int[][][][] d;
+    public static int[][][][] agents;
+    public static ArrayList<AgentTime> agentMoves = new ArrayList<>();
     public static  int oo = 1000*1000;
 
     public static void main(String[] args) {
@@ -27,10 +29,11 @@ public class Explore {
             }
         }
         d = new int[n][n][2][4*n];
+        agents = new int[n][n][2][4*n];
 
-        createTemporalCycle(staticCycle);
+        //createTemporalCycle(staticCycle);
         //createTemporalCycleAllCycle(staticCycle);
-        //createTemporalCycleAllTheSame(staticCycle);
+        createTemporalCycleAllTheSame(staticCycle);
         cycleWriter(n);
 
         //Calculate the distance between every two nodes for all times
@@ -49,9 +52,31 @@ public class Explore {
                 }
             }
         }
+
         tBFSWriter(n);
         explore(n);
         dpWriter(n);
+        findPath(n);
+
+        for(int i=0; i< agentMoves.size(); i++){
+            System.out.println("time: " + agentMoves.get(i).getTime() + " node: " + agentMoves.get(i).getNode());
+        }
+
+        System.out.println("----------------------------------------");
+        for(int t=0; t<2*n; t++){
+            System.out.println("--------------------------t: " + t + "------------------------" );
+            for(int k=0;k<2; k++){
+                System.out.println("k = " + k);
+                for (int i=0; i<n; i++){
+                    for(int j=0; j<n; j++){
+                        System.out.print(agents[i][j][k][t] + " ");
+                    }
+                    System.out.println(" ");
+                }
+            }
+        }
+
+
     }
 
     /**
@@ -176,15 +201,15 @@ public class Explore {
 
         for(int x=0; x<4*n; x++){
             for(int y=1; y<n; y++){
-                d[y][y-1][1][x] = distance[y][y-1][x];
-                d[y][y-1][0][x] = distance[y][y-1][x];
+                d[y][y-1][1][x] = 0;
+                d[y][y-1][0][x] = 0;
             }
-            d[0][n-1][1][x] = distance[0][n-1][x];
-            d[0][n-1][0][x] = distance[0][n-1][x];
+            d[0][n-1][1][x] = 0;
+            d[0][n-1][0][x] = 0;
         }
 
         for(int t=(2*n); t>=0; t--){
-            for(int p=2; p<n; p++){
+            for(int p=2; p<=n; p++){
                 for(int i=0; i<n; i++){
                     int j = decrement(i,n,p);
                     for(int k=0; k<2; k++){
@@ -194,34 +219,95 @@ public class Explore {
                                     d[i][increment(j,n,1)][1][(t+distance[j][increment(j,n,1)][t])];
                             left = distance[i][decrement(i,n,1)][t] +
                                     d[decrement(i,n,1)][j][0][(t+distance[i][decrement(i,n,1)][t])];
-//                            System.out.println("distance: " + distance[i][increment(j,n,1)][t]);
-//                            System.out.println( "dp: " + d[i][increment(j,n,1)][1][(t+distance[j][increment(j,n,1)][t])]);
-//                            System.out.println("i,j: "+ i + ", " + j +" right: " + right + " and left: " + left);
                         }
                         else{
                             right = distance[j][increment(j,n,1)][t] +
                                     d[i][increment(j,n,1)][1][(t+distance[j][increment(j,n,1)][t])];
                             left = distance[j][decrement(i,n,1)][t] +
                                     d[decrement(i,n,1)][j][0][(t+distance[j][increment(j,n,1)][t])];
-                            //System.out.println("i,j: "+ i + ", " + j +" right: " + right + " and left: " + left);
                         }
                         d[i][j][k][t] = (left < right) ? left : right;
-                        //System.out.println(d[i][j][k][t]);
+                        agents[i][j][k][t] = (left < right) ? 0 : 1;
                     }
                 }
             }
         }
     }
 
+    public static void findRecursivePath(int left, int right, int direction, int time, int n){
+        System.err.println( "t: "+time+" "+left + " " + right + " direction: " + direction+"   " +d[left][right][direction][time]);
+        if(d[left][right][direction][time] == 0){
+            int where = (direction==0)? left:right;
+            addAgentMove(time, where);
+            return;
+        }
+        System.out.println("------"+agents[left][right][direction][time]);
+        if(agents[left][right][direction][time] == 0){
+            if(direction == 0){
+                addAgentMove(time, left);
+                findRecursivePath(decrement(left, n, 1), right, direction, time+1, n);
+            }
+            else{
+                addAgentMove(time, right);
+                addAgentMove(time+ distance[right][left][time], left);
+                findRecursivePath(decrement(left, n, 1), right,
+                        0, time+distance[right][decrement(left, n, 1)][time], n);
+            }
+        }
+        else{
+            if(direction == 1){
+                addAgentMove(time, right);
+                findRecursivePath(left, increment(right, n, 1), direction, time+1, n);
+            }
+            else{
+                addAgentMove(time, left);
+                addAgentMove(time+distance[left][right][time], right);
+                findRecursivePath(left, increment(right, n,1),
+                        1, time+distance[left][increment(right, n, 1)][time], n);
+            }
+        }
+    }
+
+    public static void findPath(int n){
+        int start = 0;
+        int direction = 0;
+        int min = oo;
+        int time= 0;
+
+        for(int i=0; i<n; i++){
+            for(int k=0; k<2; k++){
+                if(d[i][i][k][0]<min){
+                    min = d[i][i][k][0];
+                    start = i;
+                    direction = k;
+                }
+            }
+        }
+        addAgentMove(time, start);
+        if(agents[start][start][direction][time]==1){
+            findRecursivePath(start,increment(start, n, 1), 1, time+1, n);
+        }
+        else{
+            findRecursivePath(decrement(start, n, 1), start,0, time+1, n);
+        }
+        System.err.println(min);
+
+    }
+
+    public static void addAgentMove(int time, int node){
+        AgentTime a = new AgentTime(time, node);
+        agentMoves.add(a);
+    }
+
     public static int increment(int number, int n, int howMuch){
         if((number + howMuch) >= n)
-            return (number + howMuch)%(n-1);
+            return (number + howMuch)%(n);
         else
             return (number+howMuch);
     }
     public static int decrement(int number, int n, int howMuch){
         if((number-howMuch) < 0){
-            return (number-howMuch)%(n)+n;
+            return (number-howMuch + n)%(n);
         }
         else
             return (number-howMuch);
