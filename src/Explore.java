@@ -14,9 +14,19 @@ public class Explore {
     public static  int oo = 1000*1000;
 
     public static void main(String[] args) {
-        System.out.println("Please enter the number of nodes: ");
-        Scanner sc = new Scanner(System.in);
-        int n = sc.nextInt();
+        //System.out.println("Please enter the number of nodes: ");
+        //Scanner sc = new Scanner(System.in);
+        //int n = sc.nextInt();
+        Random r = new Random();
+        for(int i=0; i<20; i++){
+            int n = r.nextInt(50)+3;
+            cycles = new ArrayList<>();
+            run(n);
+            System.out.println("n: "+ n + " Min: " + calculateMin(n)+ " Max: " + calculateMax(n));
+        }
+    }
+
+    public static void run(int n){
         int[][] staticCycle = fillStaticCycle(n);
         distance = new int[n][n][4*n];
 
@@ -31,10 +41,10 @@ public class Explore {
         d = new int[n][n][2][4*n];
         agents = new int[n][n][2][4*n];
 
-        //createTemporalCycle(staticCycle);
+        createTemporalCycle(staticCycle);
         //createTemporalCycleAllCycle(staticCycle);
-        createTemporalCycleAllTheSame(staticCycle);
-        cycleWriter(n);
+        //createTemporalCycleAllTheSame(staticCycle);
+        //cycleWriter(n);
 
         //Calculate the distance between every two nodes for all times
         for(int time=0;time<4*n;time++){
@@ -53,28 +63,10 @@ public class Explore {
             }
         }
 
-        tBFSWriter(n);
+        //tBFSWriter(n);
         explore(n);
-        dpWriter(n);
+        //dpWriter(n);
         findPath(n);
-
-        for(int i=0; i< agentMoves.size(); i++){
-            System.out.println("time: " + agentMoves.get(i).getTime() + " node: " + agentMoves.get(i).getNode());
-        }
-
-        System.out.println("----------------------------------------");
-        for(int t=0; t<2*n; t++){
-            System.out.println("--------------------------t: " + t + "------------------------" );
-            for(int k=0;k<2; k++){
-                System.out.println("k = " + k);
-                for (int i=0; i<n; i++){
-                    for(int j=0; j<n; j++){
-                        System.out.print(agents[i][j][k][t] + " ");
-                    }
-                    System.out.println(" ");
-                }
-            }
-        }
 
 
     }
@@ -235,13 +227,12 @@ public class Explore {
     }
 
     public static void findRecursivePath(int left, int right, int direction, int time, int n){
-        System.err.println( "t: "+time+" "+left + " " + right + " direction: " + direction+"   " +d[left][right][direction][time]);
         if(d[left][right][direction][time] == 0){
             int where = (direction==0)? left:right;
             addAgentMove(time, where);
             return;
         }
-        System.out.println("------"+agents[left][right][direction][time]);
+
         if(agents[left][right][direction][time] == 0){
             if(direction == 0){
                 addAgentMove(time, left);
@@ -290,13 +281,37 @@ public class Explore {
         else{
             findRecursivePath(decrement(start, n, 1), start,0, time+1, n);
         }
-        System.err.println(min);
 
     }
 
     public static void addAgentMove(int time, int node){
         AgentTime a = new AgentTime(time, node);
         agentMoves.add(a);
+    }
+
+    public static int calculateMin(int n){
+        int min = oo;
+        for(int i=0; i<n; i++){
+            if(d[i][i][0][0]<min){
+                min = d[i][i][0][0];
+            }
+            if(d[i][i][1][0]<min){
+                min = d[i][i][1][0];
+            }
+        }
+        return min;
+    }
+    public static int calculateMax(int n){
+        int max = -1*oo;
+        for(int i=0; i<n; i++){
+            if(d[i][i][0][0]>max){
+                max = d[i][i][0][0];
+            }
+            if(d[i][i][1][0]>max){
+                max = d[i][i][1][0];
+            }
+        }
+        return max;
     }
 
     public static int increment(int number, int n, int howMuch){
